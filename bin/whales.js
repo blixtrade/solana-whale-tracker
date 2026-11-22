@@ -54,7 +54,7 @@ main(async () => {
   if (!args.json) {
     console.log(`\n${c.bold(title)}${mint ? "  " + c.dim(mint) : ""}`);
     const span = trades.length ? `covering the last ${age(Date.now() - trades.at(-1).time)}` : "last 24h";
-    console.log(c.dim(`Trades of ${usd(minUsd)} or more, ${span}, ${pools.length} pool${pools.length > 1 ? "s" : ""}\n`));
+    console.log(c.dim(`Trades of ${usd(minUsd)} or more, ${span}, ${pools.length} pool${pools.length === 1 ? "" : "s"}\n`));
     if (!trades.length) console.log(`No trades of ${usd(minUsd)} or more. Try a lower --min-usd.`);
     else {
       const net = summary.netUsd;
