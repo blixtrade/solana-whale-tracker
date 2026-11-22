@@ -51,7 +51,7 @@ test("trending pools rejects an empty GeckoTerminal response", async () => {
   let requests = 0;
   globalThis.fetch = async (url) => {
     requests++;
-    assert.match(String(url), /geckoterminal\\.com/);
+    assert.ok(String(url).includes("api.geckoterminal.com"));
     return { ok: true, status: 200, json: async () => ({ data: [] }) };
   };
   try {
