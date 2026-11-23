@@ -74,13 +74,17 @@ Usage:
   whales --trending [options]    Whale trades across the trending pools
 
 Options:
-  --min-usd <n>     Smallest trade to count, in USD (default 1000)
+  --min-usd <n>     Smallest trade to count, in USD (default 1000, 0 for everything)
   --pools <n>       Pools to read: the token's deepest (default 3), or trending pools (default 5)
   --limit <n>       Trades to list (default 20)
   --wallets <n>     Wallets in each leaderboard (default 5)
   --watch <sec>     Keep running and print new whale trades (default 30, minimum 20)
   --json            Print trades and summary as JSON
   --help            Show this help
+
+Numeric flags are validated before any network call: --min-usd takes 0 or more,
+and --limit and --wallets take whole numbers above 0. Anything else exits with an
+error rather than falling back to a default.
 
 Each pool returns its 300 most recent matching trades from the last 24 hours,
 so on a busy token raise --min-usd to see further back.

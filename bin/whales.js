@@ -2,6 +2,26 @@
 import { age, c, compact, footer, isAddress, main, pad, parseArgs, short, sleep, table, usd } from "../lib/core.js";
 import { findPools, loadTrades, summarize, trendingPools, watchSeconds } from "../lib/whales.js";
 
+/**
+ * A whole number above 0 from a numeric flag, or the fallback when the flag is
+ * absent. Bad input is rejected instead of silently replaced, so `--limit -2`
+ * fails loudly rather than reaching `trades.slice(0, -2)`.
+ */
+function positiveInt(name, value, fallback) {
+  if (value === undefined) return fallback;
+  const n = Number(value);
+  if (!Number.isInteger(n) || n <= 0) throw new Error(`--${name} must be a whole number above 0 (got "${value}").`);
+  return n;
+}
+
+/** Like positiveInt, but 0 is allowed (for --min-usd, where 0 means "everything"). */
+function nonNegativeNumber(name, value, fallback) {
+  if (value === undefined) return fallback;
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) throw new Error(`--${name} must be a number of 0 or more (got "${value}").`);
+  return n;
+}
+
 const HELP = `solana-whale-tracker: big buys and sells on any Solana token
 
 Usage:
@@ -9,13 +29,17 @@ Usage:
   whales --trending [options]    Whale trades across the trending pools
 
 Options:
-  --min-usd <n>     Smallest trade to count, in USD (default 1000)
+  --min-usd <n>     Smallest trade to count, in USD (default 1000, 0 for everything)
   --pools <n>       Pools to read: the token's deepest (default 3), or trending pools (default 5)
   --limit <n>       Trades to list (default 20)
   --wallets <n>     Wallets in each leaderboard (default 5)
   --watch <sec>     Keep running and print new whale trades (default 30, minimum 20)
   --json            Print trades and summary as JSON
   --help            Show this help
+
+Numeric flags are validated before any network call: --min-usd takes 0 or more,
+and --limit and --wallets take whole numbers above 0. Anything else exits with an
+error rather than falling back to a default.
 
 Each pool returns its 300 most recent matching trades from the last 24 hours,
 so on a busy token raise --min-usd to see further back.
@@ -26,9 +50,9 @@ main(async () => {
   const mint = args._[0];
   if (args.help || (!mint && !args.trending)) { console.log(HELP); process.exit(args.help ? 0 : 1); }
   if (mint && !isAddress(mint)) throw new Error(`"${mint}" is not a Solana address.`);
-  const minUsd = Math.max(1, Number(args["min-usd"]) || 1000);
-  const limit = Number(args.limit) || 20;
-  const walletCount = Number(args.wallets) || 5;
+  const minUsd = nonNegativeNumber("min-usd", args["min-usd"], 1000);
+  const limit = positiveInt("limit", args.limit, 20);
+  const walletCount = positiveInt("wallets", args.wallets, 5);
   const watch = watchSeconds(args.watch);
 
   let pools, title, single = null;
