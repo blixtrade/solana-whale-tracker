@@ -79,12 +79,16 @@ Options:
   --limit <n>       Trades to list (default 20)
   --wallets <n>     Wallets in each leaderboard (default 5)
   --watch <sec>     Keep running and print new whale trades (default 30, minimum 20)
-  --json            Print trades and summary as JSON
+  --json            Print trades and summary as JSON (with --watch: one trade per line)
   --help            Show this help
 
 Numeric flags are validated before any network call: --min-usd takes 0 or more,
 and --limit and --wallets take whole numbers above 0. Anything else exits with an
 error rather than falling back to a default.
+
+With --watch, --json prints each initial trade as one JSON line (oldest first,
+the same shape as the later ones), then every new trade as it arrives, so a
+script reading the stream does not have to special-case a first block.
 
 Each pool returns its 300 most recent matching trades from the last 24 hours,
 so on a busy token raise --min-usd to see further back.

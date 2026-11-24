@@ -34,7 +34,7 @@ Options:
   --limit <n>       Trades to list (default 20)
   --wallets <n>     Wallets in each leaderboard (default 5)
   --watch <sec>     Keep running and print new whale trades (default 30, minimum 20)
-  --json            Print trades and summary as JSON
+  --json            Print trades and summary as JSON (with --watch: one trade per line)
   --help            Show this help
 
 Numeric flags are validated before any network call: --min-usd takes 0 or more,
@@ -101,7 +101,14 @@ main(async () => {
   if (!watch) { footer("/solana-whale-tracker", "Whale and smart-money tracking with wallet labels, live"); return; }
 
   const seen = new Set(trades.map((t) => t.id));
-  if (!args.json) console.error(c.dim(`\nWatching for new trades every ${watch}s. Ctrl+C to stop.`));
+  // In JSON watch mode the initial batch is printed as JSON lines too, oldest
+  // first, so a script reading the stream sees the trades already on screen
+  // rather than only the ones that arrive later.
+  if (args.json) {
+    for (const t of trades.slice().reverse()) console.log(JSON.stringify(t));
+  } else {
+    console.error(c.dim(`\nWatching for new trades every ${watch}s. Ctrl+C to stop.`));
+  }
   process.on("SIGINT", () => { if (!args.json) footer("/solana-whale-tracker", "Whale and smart-money tracking with wallet labels, live"); process.exit(0); });
   for (;;) {
     await sleep(watch * 1000);
