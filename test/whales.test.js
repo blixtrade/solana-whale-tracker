@@ -44,3 +44,21 @@ test("an empty list summarises to zeros", () => {
   assert.equal(s.netUsd, 0);
   assert.equal(s.topBuyers.length, 0);
 });
+
+
+test("trending pools rejects an empty GeckoTerminal response", async () => {
+  const originalFetch = globalThis.fetch;
+  let requests = 0;
+  globalThis.fetch = async (url) => {
+    requests++;
+    assert.ok(String(url).includes("api.geckoterminal.com"));
+    return { ok: true, status: 200, json: async () => ({ data: [] }) };
+  };
+  try {
+    const { trendingPools } = await import("../lib/whales.js");
+    await assert.rejects(trendingPools(), /GeckoTerminal returned no trending pools\. Try again in a minute\./);
+    assert.equal(requests, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
