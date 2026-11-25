@@ -81,6 +81,7 @@ Options:
   --watch <sec>     Keep running and print new whale trades (default 30, minimum 20)
   --json            Print trades and summary as JSON (with --watch: one trade per line)
   --help            Show this help
+  --version         Print the version and exit
 
 Numeric flags are validated before any network call: --min-usd takes 0 or more,
 and --limit and --wallets take whole numbers above 0. Anything else exits with an
