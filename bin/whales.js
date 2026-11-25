@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { age, c, compact, footer, isAddress, main, pad, parseArgs, short, sleep, table, usd } from "../lib/core.js";
 import { findPools, loadTrades, summarize, trendingPools, watchSeconds } from "../lib/whales.js";
+import pkg from "../package.json" with { type: "json" };
 
 /**
  * A whole number above 0 from a numeric flag, or the fallback when the flag is
@@ -35,6 +36,7 @@ Options:
   --wallets <n>     Wallets in each leaderboard (default 5)
   --watch <sec>     Keep running and print new whale trades (default 30, minimum 20)
   --json            Print trades and summary as JSON (with --watch: one trade per line)
+  --version         Show the version
   --help            Show this help
 
 Numeric flags are validated before any network call: --min-usd takes 0 or more,
@@ -46,9 +48,10 @@ so on a busy token raise --min-usd to see further back.
 `;
 
 main(async () => {
-  const args = parseArgs(process.argv.slice(2), { booleans: ["trending", "json", "help"] });
+  const args = parseArgs(process.argv.slice(2), { booleans: ["trending", "json", "help", "version"] });
   const mint = args._[0];
-  if (args.help || (!mint && !args.trending)) { console.log(HELP); process.exit(args.help ? 0 : 1); }
+  if (args.help || (!mint && !args.trending && !args.version)) { console.log(HELP); process.exit(args.help || args.version ? 0 : 1); }
+  if (args.version) { console.log(`solana-whale-tracker ${pkg.version}`); return; }
   if (mint && !isAddress(mint)) throw new Error(`"${mint}" is not a Solana address.`);
   const minUsd = nonNegativeNumber("min-usd", args["min-usd"], 1000);
   const limit = positiveInt("limit", args.limit, 20);

@@ -80,6 +80,7 @@ Options:
   --wallets <n>     Wallets in each leaderboard (default 5)
   --watch <sec>     Keep running and print new whale trades (default 30, minimum 20)
   --json            Print trades and summary as JSON (with --watch: one trade per line)
+  --version         Show the version
   --help            Show this help
 
 Numeric flags are validated before any network call: --min-usd takes 0 or more,
