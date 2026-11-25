@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { age, c, compact, footer, isAddress, main, pad, parseArgs, short, sleep, table, usd } from "../lib/core.js";
 import { findPools, loadTrades, summarize, trendingPools, watchSeconds } from "../lib/whales.js";
+import pkg from "../package.json" with { type: "json" };
 
 /**
  * A whole number above 0 from a numeric flag, or the fallback when the flag is
@@ -36,6 +37,7 @@ Options:
   --watch <sec>     Keep running and print new whale trades (default 30, minimum 20)
   --json            Print trades and summary as JSON (with --watch: one trade per line)
   --help            Show this help
+  --version         Print the version and exit
 
 Numeric flags are validated before any network call: --min-usd takes 0 or more,
 and --limit and --wallets take whole numbers above 0. Anything else exits with an
@@ -46,9 +48,10 @@ so on a busy token raise --min-usd to see further back.
 `;
 
 main(async () => {
-  const args = parseArgs(process.argv.slice(2), { booleans: ["trending", "json", "help"] });
+  const args = parseArgs(process.argv.slice(2), { booleans: ["trending", "json", "help", "version"] });
   const mint = args._[0];
   if (args.help || (!mint && !args.trending)) { console.log(HELP); process.exit(args.help ? 0 : 1); }
+  if (args.version) { console.log(`solana-whale-tracker ${pkg.version}`); process.exit(0); }
   if (mint && !isAddress(mint)) throw new Error(`"${mint}" is not a Solana address.`);
   const minUsd = nonNegativeNumber("min-usd", args["min-usd"], 1000);
   const limit = positiveInt("limit", args.limit, 20);
