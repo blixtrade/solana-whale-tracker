@@ -75,7 +75,7 @@ Usage:
 
 Options:
   --min-usd <n>     Smallest trade to count, in USD (default 1000, 0 for everything)
-  --pools <n>       Pools to read: the token's deepest (default 3), or trending pools (default 5)
+  --pools <n>       Pools to read: the token's deepest (default 3, max 5), or trending pools (default 5, max 10)
   --limit <n>       Trades to list (default 20)
   --wallets <n>     Wallets in each leaderboard (default 5)
   --watch <sec>     Keep running and print new whale trades (default 30, minimum 20)
@@ -94,6 +94,64 @@ script reading the stream does not have to special-case a first block.
 Each pool returns its 300 most recent matching trades from the last 24 hours,
 so on a busy token raise --min-usd to see further back.
 ```
+
+`--pools` values above the max are capped (so `--pools 20` reads 5 pools for one token, 10 for `--trending`).
+
+## JSON output
+
+`--json` prints one object: `{ token, pools, minUsd, summary, trades }`. Units: every `*Usd` and `usd` field is in US dollars, `time` and `last` are Unix epoch milliseconds, and `tokens` is in whole tokens (not raw base units). `trades` is newest first. With `--trending`, `token` is `null`, and each pool and trade also carries the token's `mint` (pools only) and `symbol`.
+
+Trimmed example from a real run (`whales 9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump --json --pools 1 --min-usd 5000`):
+
+```json
+{
+  "token": {
+    "mint": "9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump",
+    "symbol": "DCTY",
+    "name": "DacityCoin",
+    "priceUsd": 0.001011,
+    "pools": [{ "address": "DChXQ4qFPpNPEDfZLNiwvPhrVuuFGfqEDLAAZbiZHUWf", "name": "DCTY / TTWO", "liq": 153004.62, "dex": "pumpswap" }]
+  },
+  "pools": [{ "address": "DChXQ4qFPpNPEDfZLNiwvPhrVuuFGfqEDLAAZbiZHUWf", "name": "DCTY / TTWO", "liq": 153004.62, "dex": "pumpswap" }],
+  "minUsd": 5000,
+  "summary": {
+    "buys": 0,
+    "sells": 1,
+    "buyUsd": 0,
+    "sellUsd": 8419.768137584586,
+    "netUsd": -8419.768137584586,
+    "wallets": 1,
+    "topBuyers": [],
+    "topSellers": [
+      { "wallet": "FsG3BaPmRTdSrPaivbgJsFNCCa8cPfkUtk8VLWXkHpHP", "buys": 0, "sells": 1, "buyUsd": 0, "sellUsd": 8419.768137584586, "last": 1795611476000, "netUsd": -8419.768137584586, "volumeUsd": 8419.768137584586 }
+    ]
+  },
+  "trades": [
+    {
+      "id": "solana_473754656_3g72yaBqeCETygGSZMMtQ3vT6HXrrCz2wv5jA8CLB1RHsPscr5mTpfzFer42VbUcSGhphbEfC2SccwyYhUbxoddt_40_1795611535",
+      "time": 1795611476000,
+      "side": "sell",
+      "wallet": "FsG3BaPmRTdSrPaivbgJsFNCCa8cPfkUtk8VLWXkHpHP",
+      "usd": 8419.768137584586,
+      "tokens": 7801172.260453,
+      "priceUsd": 0.001079295246467954,
+      "signature": "3g72yaBqeCETygGSZMMtQ3vT6HXrrCz2wv5jA8CLB1RHsPscr5mTpfzFer42VbUcSGhphbEfC2SccwyYhUbxoddt",
+      "pool": "DChXQ4qFPpNPEDfZLNiwvPhrVuuFGfqEDLAAZbiZHUWf"
+    }
+  ]
+}
+```
+
+With `--watch`, `--json` prints one trade object (the shape of an entry in `trades`) per line instead.
+
+## Environment variables
+
+| Variable | Effect |
+|---|---|
+| `NO_COLOR` | Turns off colours (they are also off when output is not a terminal). |
+| `BLIX_NO_FOOTER` | Hides the last line of output (the link to the full BLIX terminal). |
+| `BLIX_QUIET` | Hides the rate-limit notice. |
+| `DEBUG` | Prints the full stack trace when the command fails. |
 
 ## How it works
 
